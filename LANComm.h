@@ -19,6 +19,7 @@
 #include <vector>
 #include <sys/poll.h>
 #include <algorithm>
+#include <thread>
 
 #define BUFMAX 1024
 #define DEVICEMAX 100
@@ -73,10 +74,10 @@ class TCPComm{
 		int sd;
 		struct sockaddr_in connect_addr;
 		int connectlen;
-		//int port;
-		//char recvBuffer[BUFMAX];
+		string port;
+		char sendBuffer[BUFMAX];
 	public:
-		TCPComm();
+		TCPComm(string);
 		//~TCPCommServer();
 		void run();
 		void setDeviceIndex(int);
@@ -106,6 +107,7 @@ class ReplyDaemon{
 		struct pollfd* getNextPollfd(struct pollfd*);
 		struct pollfd* getNextReventPoll(struct pollfd*);
 		int acceptPollfd(int);
+		void register_Pollfd(int);
 
 };
 

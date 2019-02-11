@@ -71,20 +71,15 @@ void ReplyDaemon::run() {
 		for (int n_poll = 0; n_poll < nread; n_poll++) {  // iterate nread times
 			cur = getNextReventPoll(cur);  // return type : struct pollfd*
 			int index = cur-&sock_pollfd[0];
+			cout<<"index: "<<index<<endl;
 
 			if(index == 0) {
 				cout<<"TCP/IP Socket Event Occur!"<<endl;
 				int nfd = acceptPollfd(sd_tcp);	
-				int EmptyPfdIndex = getEmptyPfdIndex();
+				register_Pollfd(nfd);
 				recvMsg(nfd);
-				//				mptr->set_Msg(EmptyPfdIndex,recvMsg(nfd));
-				//
-				//				if(mptr->isSetID()) {
-				//					cmptr->register_ID(mptr,nfd);
-				//				}
-				//				else cout<<"Wrong ID Submission"<<endl;
 			}
-			else if(index ==1) {
+			else if(index == 1) {
 				cout<<"UDP Socket Event Ocuur!"<<endl;
 				replyDeviceInfo();	
 			}
@@ -92,20 +87,6 @@ void ReplyDaemon::run() {
 				cout<<"Client Socket Event Occur!"<<endl;
 				int csd = sock_pollfd[index].fd;
 				recvMsg(csd);
-				//				mptr->set_Msg(index,recvMsg(csd));
-				//
-				//				if(mptr->isSetting()){
-				//					cmptr->settingMsg(mptr);	
-				//				}
-				//				else if(mptr->isEmpty()){
-				//					cmptr->close_Session(mptr);
-				//				}
-				//				else if(mptr->isWhisper()){
-				//					cmptr->whispMsg(mptr);	
-				//				}
-				//				else{
-				//					cmptr->broadMsg(mptr);
-				//				}
 			}
 			else{
 				cout<<"Wrong Index Input: "<<cur->fd<<endl;      
@@ -117,7 +98,15 @@ void ReplyDaemon::run() {
 string ReplyDaemon::recvMsg(int fd) {
 	strcpy(buftemp,""); //buf 초기화
 	int ret = recv(fd, buftemp, sizeof(buftemp), 0);
+
+	if (ret == 0){  // 읽어 왔으나 아무것도 없음 --> EOF 가 왔기 때문. 
+		perror("tcp is disconnected");
+		close(sd_tcp);
+		exit(1);
+	}
+
 	cout<<"tcp recv: "<<buftemp<<endl;
+	
 	return buftemp;
 }
 
@@ -191,5 +180,10 @@ int ReplyDaemon::acceptPollfd(int sd){
 	int serverlen = sizeof(sockaddr_in);
 	int nfd = accept(sd, (struct sockaddr *)&ADDR_IN, (socklen_t *)&serverlen);
 	return nfd;
+}
+
+void ReplyDaemon::register_Pollfd(int nfd) {
+	int EmptyPfdIndex = getEmptyPfdIndex();
+	sock_pollfd[EmptyPfdIndex].fd = nfd;
 }
 

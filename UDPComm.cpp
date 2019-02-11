@@ -39,22 +39,17 @@ int UDPComm::createBrdSocket() {
 void UDPComm::setLocalDeviceInfo() {
 	int n_read, n_send;
 	int sd = createBrdSocket();
-	int cnt =0;
-	while(1) {
-		if(cnt == 1) break;
-		cnt++;
-		
-		if((n_read = read(0, sendBuffer, BUFSIZ)) > 0) {
-			sendBuffer[n_read-1] = '\0';
-		}
 
-		if((n_send = sendto(sd, sendBuffer, strlen(sendBuffer), 0, (struct sockaddr *)&s_addr_s, sizeof(s_addr_s))) < 0) {
-			cout<<"sendto() error"<<endl;
-			exit(-3);
-		}
+	if((n_read = read(0, sendBuffer, BUFSIZ)) > 0) {
+		sendBuffer[n_read-1] = '\0';
+	}
 
-		recvMultipleResponse(sd);
-	}		
+	if((n_send = sendto(sd, sendBuffer, strlen(sendBuffer), 0, (struct sockaddr *)&s_addr_s, sizeof(s_addr_s))) < 0) {
+		cout<<"sendto() error"<<endl;
+		exit(-3);
+	}
+
+	recvMultipleResponse(sd);
 	close(sd);
 }
 
@@ -80,7 +75,7 @@ void UDPComm::recvMultipleResponse(int sd) {
 			recvBuffer[n_recv]='\0';
 			cout<<"echoed Data: "<<recvBuffer<<" from "<<inet_ntoa(c_addr.sin_addr)<<endl;
 
-			if((ret = checkDeviceInfo(c_addr))>0) {
+			if((ret = checkDeviceInfo(c_addr))==0) {
 				continue;
 			}
 			else {
@@ -101,8 +96,6 @@ int UDPComm::checkDeviceInfo(sockaddr_in checkaddr_in) {
 			return 0;
 		}
 	}
-
-	deviceInfo.push_back(checkaddr_in);
 	return 1;
 }
 
