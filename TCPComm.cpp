@@ -4,10 +4,6 @@ vector<sockaddr_in> deviceInfo={};
 
 TCPComm::TCPComm(string port_t): port(port_t) {
 	memset((char *)&connect_addr,'\0',sizeof(connect_addr));
-//	port = string(stoi(portddi_t)+1); //TCP PORT = UDP PORT + 1
-//	connect_addr.sin_family = AF_INET;
-//	connect_addr.sin_port = htons(atoi(port));
-//	connect_addr.sin_addr.s_addr =  inet_addr(ip);
 }
 
 void TCPComm::connectSocket() {
@@ -35,11 +31,10 @@ void TCPComm::run() {
 		if((n_read = read(0, sendBuffer, BUFSIZ)) > 0) {
 			sendBuffer[n_read-1] = '\0';
 		}
-	//string msg =("hi, I'm TCP ").append("from "+string(inet_ntoa(connect_addr.sin_addr));
+		//string msg =("hi, I'm TCP ").append("from "+string(inet_ntoa(connect_addr.sin_addr));
 		string msg = string(sendBuffer);
 		msg.append("[from 192.168.0.103]");
 		send(sd, msg.c_str(), msg.length()+1, 0);
-		sendBuffer[0]='\0';
 	}
 }
 

@@ -1,6 +1,5 @@
 #include "LANComm.h"
 
-//UDPComm::UDPComm() {}
 
 //vector<sockaddr_in> deviceInfo;
 
@@ -89,8 +88,6 @@ void UDPComm::recvMultipleResponse(int sd) {
 }
 
 int UDPComm::checkDeviceInfo(sockaddr_in checkaddr_in) {
-
-	cout<<"check!"<<endl;
 	for(auto it = deviceInfo.begin(); it!=deviceInfo.end(); ++it) {
 		if (((*it).sin_addr.s_addr == checkaddr_in.sin_addr.s_addr) & ((*it).sin_port == checkaddr_in.sin_port)) {
 			return 0;
@@ -105,7 +102,7 @@ void UDPComm::AlarmTimer(int time) {
 }
 
 void sigAlarm(int signo) {
-	cout<<"alarm\n"<<endl;
+	cout<<"alarm"<<endl;
 	return;
 }
 
