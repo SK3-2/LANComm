@@ -1,9 +1,12 @@
 #include "LANComm.h"
 
 UDPComm::UDPComm(string port_t): port(port_t) {
-	//alarm signal settting
+	//get enable brd-ip
 	string brdIp = getBrdIp();
 	cout<<"my brdIP: "<<brdIp<<endl;
+}
+
+void UDPComm::setAlarmInfo() {
 	act.sa_handler = sigAlarm;
 	sigemptyset(&act.sa_mask);
 	act.sa_flags = 0;
@@ -40,26 +43,21 @@ string UDPComm::getBrdIp() {
 	char  cmd[BUFMAX];
 	FILE *fp, *fp2;
 
-	fp = popen("ip a | awk '/state UP/ {print $2}'", "r");
-	if (fp == NULL)
-	{   
+	if ((fp = popen("ip a | awk '/state UP/ {print $2}'", "r")) == NULL) {   
 		perror( "popen() 실패");
 		exit(-1);
 	}
 
-	int ret=fscanf(fp, "%s", buff);
+	fscanf(fp, "%s", buff);
 	buff[strlen(buff)-1]='\0';
 	sprintf(cmd, "ip a s dev %s | awk '/inet/ {print $4}'", buff);
-	fp2 = popen(cmd, "r");
 
-	if (fp2 == NULL)
-	{
+	if ((fp2 = popen(cmd, "r")) == NULL) {
 		perror( "popen() 실패");
 		exit(-1);
 	}   
 
-	int ret2=fscanf(fp2, "%s", buff);
-
+	fscanf(fp2, "%s", buff);
 	pclose(fp);
 
 	return string(buff);
@@ -83,13 +81,14 @@ void UDPComm::setLocalDeviceInfo() {
 }
 
 void UDPComm::recvMultipleResponse(int sd) {
-
 	int addr_len = sizeof(c_addr);
 	int n_recv, ret;
+	//set Alarm Signal Info
+	setAlarmInfo();
+
 	while(1) {
 		AlarmTimer(2);
 		if((n_recv = recvfrom(sd, recvBuffer, sizeof(recvBuffer), 0, (struct sockaddr *)&c_addr, (socklen_t *)&addr_len))<0) {
-
 			if(errno == EINTR) {
 				cout<<"socket timeout"<<endl;
 				cout<<"success"<<endl;
@@ -100,9 +99,9 @@ void UDPComm::recvMultipleResponse(int sd) {
 			}
 		} 
 		else {
+			
 			AlarmTimer(0);
 			recvBuffer[n_recv]='\0';
-			cout<<"echoed Data: "<<recvBuffer<<" from "<<inet_ntoa(c_addr.sin_addr)<<endl;
 
 			if((ret = checkDeviceInfo(c_addr))==0) {
 				continue;
@@ -110,11 +109,11 @@ void UDPComm::recvMultipleResponse(int sd) {
 			else {
 				//ip 정보를 담아서 객체 생성 후 vector에 저장
 				deviceInfo.push_back(c_addr);
+				cout<<"echoed Data: "<<recvBuffer<<" from "<<inet_ntoa(c_addr.sin_addr)<<endl;
 				cout<<"save ip["<<inet_ntoa(c_addr.sin_addr)<<"]"<<endl;
 			}
 		}
 	}
-
 }
 
 int UDPComm::checkUserID(string ID) {

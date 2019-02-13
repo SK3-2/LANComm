@@ -20,7 +20,7 @@ void TCPComm::connectSocket() {
 		cout<<"Client : Can't open stream socket."<<endl;
 		exit(1);
 	}
-
+	
 	// connect 
 	if((connect(sd,(struct sockaddr *)&connect_addr,sizeof(connect_addr))) == -1)
 	{

@@ -5,21 +5,14 @@ ReplyComm::ReplyComm(string port_udp_t, string port_tcp_t): port_udp(port_udp_t)
 		sock_pollfd[i] = {-1,POLLIN, 0};
 	}
 
-	//sock_pollfd[0].fd = createTCPSocket();
-	//sock_pollfd[1].fd = createUDPSocket();
-	createTCPSocket();
-	createUDPSocket();
-
-	sock_pollfd[0].fd = sd_tcp;
-	sock_pollfd[1].fd = sd_udp;
+	sock_pollfd[0].fd = createTCPSocket();
+	sock_pollfd[1].fd = createUDPSocket();
 }
 
 
 int ReplyComm::createUDPSocket() {
-
 	//UDP comm setting
 	sd_udp = socket(AF_INET, SOCK_DGRAM, 0);
-
 	// broadcast ip & port setting
 	bzero(&s_addr_udp, sizeof(s_addr_udp));
 	s_addr_udp.sin_family = AF_INET;
@@ -37,10 +30,8 @@ int ReplyComm::createUDPSocket() {
 }
 
 int ReplyComm::createTCPSocket() {
-
 	// tcp/ip 접속을 위한 socket
 	sd_tcp = socket(PF_INET, SOCK_STREAM, 0);
-
 	bzero(&s_addr_tcp, sizeof(s_addr_tcp));
 	s_addr_tcp.sin_family = AF_INET;
 	s_addr_tcp.sin_addr.s_addr = INADDR_ANY;
@@ -48,7 +39,6 @@ int ReplyComm::createTCPSocket() {
 
 	cout<<"TCP PORT: "<<atoi(port_tcp.c_str())<<endl;
 
-	//소켓번호는 응용 프로그램이 알고 있는 통신 창구 번호이고, 소켓주소는 네트워크 시스템(TCP/IP, UDP)이 알고있는 주소이므로 이들의 관계를 묶어두어야(bind) 응용 프로세스와 네트워크 시스템간의 패킷 전달이 가능하기 때문
 	if(bind(sd_tcp, (struct sockaddr *)&s_addr_tcp, sizeof(s_addr_tcp)) !=0) {
 		cout<<"tcp bind error\n"<<endl;
 		exit(-1);
@@ -58,6 +48,7 @@ int ReplyComm::createTCPSocket() {
 		cout<<"listen Fail\n"<<endl;
 		exit(-1);
 	}
+
 	return sd_tcp;
 }
 // poll udp & tcp socket
@@ -65,12 +56,11 @@ void ReplyComm::run() {
 	cout<<"ReplyComm run!"<<endl;
 	while(1){
 		int nread = poll(sock_pollfd, SOCKETMAX, -1);
-
 		struct pollfd* cur = NULL;    
+
 		for (int n_poll = 0; n_poll < nread; n_poll++) {  // iterate nread times
 			cur = getNextReventPoll(cur);  // return type : struct pollfd*
 			int index = cur-&sock_pollfd[0];
-			cout<<"index: "<<index<<endl;
 
 			if(index == 0) {
 				cout<<"TCP/IP Socket Event Occur!"<<endl;
@@ -98,7 +88,7 @@ string ReplyComm::recvMsg(int fd) {
 	strcpy(sendBuffer,""); //buf 초기화
 	int ret = recv(fd, sendBuffer, sizeof(sendBuffer), 0);
 
-	if (ret == 0){  // 읽어 왔으나 아무것도 없음 --> EOF 가 왔기 때문. 
+	if (ret == 0){  // 읽어 왔으나 아무것도 없음 --> EOF 수신 
 		perror("tcp is disconnected");
 		close(sd_tcp);
 		exit(1);
@@ -110,7 +100,6 @@ string ReplyComm::recvMsg(int fd) {
 }
 
 void ReplyComm::replyDeviceInfo() {
-	//while(1) {
 	int addr_len = sizeof(c_addr);
 	int n_read, n_send;
 
@@ -121,7 +110,6 @@ void ReplyComm::replyDeviceInfo() {
 	recvBuffer[n_read] = '\0';
 
 	if (!strncmp(recvBuffer, "quit", 4)) {
-		//break;
 		return;
 	}
 
@@ -133,7 +121,6 @@ void ReplyComm::replyDeviceInfo() {
 		cout<<"sendto() error"<<endl;
 		exit(-4);
 	}
-	//}
 }
 
 // Get Empty pollfd index

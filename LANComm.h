@@ -53,6 +53,7 @@ class UDPComm{
 		int checkDeviceInfo(sockaddr_in);
 		int checkUserID(string);
 		void AlarmTimer(int);
+		void setAlarmInfo();
 };
 
 class TCPComm{
@@ -78,7 +79,7 @@ class ReplyComm{
 		int sd_tcp;
 		string port_udp;
 		string port_tcp;
-		struct sockaddr_in s_addr_udp, s_addr_tcp, c_addr; //c_addr for UDP response
+		struct sockaddr_in s_addr_udp, s_addr_tcp, c_addr;
 		struct pollfd sock_pollfd[SOCKETMAX];
 		const struct pollfd* pollfd_end = &sock_pollfd[SOCKETMAX-1];
 		char recvBuffer[BUFMAX], sendBuffer[BUFMAX];
@@ -96,7 +97,6 @@ class ReplyComm{
 		struct pollfd* getNextReventPoll(struct pollfd*);
 		int acceptPollfd(int);
 		void register_Pollfd(int);
-
 };
 
 void sigAlarm(int);
