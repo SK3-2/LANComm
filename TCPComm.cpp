@@ -1,9 +1,17 @@
 #include "LANComm.h"
 
 vector<sockaddr_in> deviceInfo={};
+string UserID = "taehyun";
 
 TCPComm::TCPComm(string port_t): port(port_t) {
 	memset((char *)&connect_addr,'\0',sizeof(connect_addr));
+}
+
+void TCPComm::run(int select_num_t) {
+	select_num = select_num_t;
+	setDeviceIndex();
+	connectSocket();
+	sendDataObject();
 }
 
 void TCPComm::connectSocket() {
@@ -24,22 +32,20 @@ void TCPComm::connectSocket() {
 	cout<<"Connect..."<<endl;
 }
 
-void TCPComm::run() {
-	connectSocket();
+void TCPComm::sendDataObject() {
 	while(1) {
 		int n_read;
-		if((n_read = read(0, sendBuffer, BUFSIZ)) > 0) {
+		if((n_read = read(0, sendBuffer, BUFMAX)) > 0) {
 			sendBuffer[n_read-1] = '\0';
 		}
-		//string msg =("hi, I'm TCP ").append("from "+string(inet_ntoa(connect_addr.sin_addr));
 		string msg = string(sendBuffer);
-		msg.append("[from 192.168.0.103]");
-		send(sd, msg.c_str(), msg.length()+1, 0);
+		msg.append(" [from 192.168.0.103]");
+		send(sd, msg.c_str(), msg.length(), 0);
 	}
 }
 
-void TCPComm::setDeviceIndex(int index) {
-	connect_addr = deviceInfo[index];	
+void TCPComm::setDeviceIndex() {
+	connect_addr = deviceInfo[select_num];	
 	cout<<"MY TCP tries to connect to "<<inet_ntoa(connect_addr.sin_addr)<<endl;
 	connect_addr.sin_port = htons(atoi(port.c_str()));
 }
