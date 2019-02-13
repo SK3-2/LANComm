@@ -28,76 +28,65 @@
 using namespace std;
 
 extern vector<sockaddr_in> deviceInfo;
-
-//class LocalDevice {
-//	private:
-//		int id;
-//		int deviceName;
-//		struct sockaddr_in c_addr;
-//	public:
-//		LocalDevice();
-//		LocalDevice(int, int, sockaddr_in);
-//		bool IsEqual(const LocalDevice*, const LocalDevice*);
-//};
+extern string UserID;
 
 class UDPComm{
 	private:
-		int sd; //UDP listen socket descriptor
+		int sd;
 		int status;
-		int on=1;
-		struct sigaction act;
-		struct sockaddr_in s_addr_s;
-		struct sockaddr_in s_addr_c;
-		struct sockaddr_in c_addr;
-		//		vector<LocalDevice> deviceInfo[DEVICEMAX];
 		string brdIp;
-		string port_udp;
-		string port_c;
+		string port;
+		struct sigaction act;
+		struct sockaddr_in s_addr;
+		struct sockaddr_in c_addr;
 		char sendBuffer[BUFMAX];
 		char recvBuffer[BUFMAX];
 	public:
-		//UDPComm();
-		UDPComm(string,string);
-		//~UDPComm();
+		UDPComm() = delete;
+		UDPComm(string);
+		~UDPComm() = default;
 		void run();
-		void replyDaemon();
 		int createBrdSocket();
+		string getBrdIp();
 		void setLocalDeviceInfo();
-		int checkDeviceInfo();
 		void recvMultipleResponse(int);
 		int checkDeviceInfo(sockaddr_in);
+		int checkUserID(string);
 		void AlarmTimer(int);
+		void setAlarmInfo();
 };
 
 class TCPComm{
 	private:
 		int sd;
-		struct sockaddr_in connect_addr;
-		int connectlen;
+		int select_num;
 		string port;
+		struct sockaddr_in connect_addr;
 		char sendBuffer[BUFMAX];
 	public:
+		TCPComm() = delete;
 		TCPComm(string);
-		//~TCPCommServer();
-		void run();
-		void setDeviceIndex(int);
+		~TCPComm() = default;
+		void run(int);
 		void connectSocket();
-		//void read();
+		void setDeviceIndex();
+		void sendDataObject();
 };
 
-class ReplyDaemon{
+class ReplyComm{
 	private:
-		int c_socket;
-		char recvBuffer[BUFMAX], buftemp[BUFMAX];
-		struct sockaddr_in s_addr_udp, s_addr_tcp, c_addr; //c_addr for UDP response
-		string port;
 		int sd_udp;
 		int sd_tcp;
+		string port_udp;
+		string port_tcp;
+		struct sockaddr_in s_addr_udp, s_addr_tcp, c_addr;
 		struct pollfd sock_pollfd[SOCKETMAX];
 		const struct pollfd* pollfd_end = &sock_pollfd[SOCKETMAX-1];
+		char recvBuffer[BUFMAX], sendBuffer[BUFMAX];
 	public:
-		ReplyDaemon(string);
-		//~ReplyDamon();
+		ReplyComm() = delete;
+		ReplyComm(string,string);
+		~ReplyComm() = default;
 		void run();
 		int createUDPSocket();
 		int createTCPSocket();
@@ -108,7 +97,6 @@ class ReplyDaemon{
 		struct pollfd* getNextReventPoll(struct pollfd*);
 		int acceptPollfd(int);
 		void register_Pollfd(int);
-
 };
 
 void sigAlarm(int);
