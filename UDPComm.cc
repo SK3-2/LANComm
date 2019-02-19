@@ -40,11 +40,11 @@ int UDPComm::createBrdSocket() {
 
 int UDPComm::createUniSocket() {
 	//UDP comm setting
-	sd_unicast = socket(AF_INET, SOCK_DGRAM, 0);
+	sd_unicast_ = socket(AF_INET, SOCK_DGRAM, 0);
 
-	cout<<"UDP PORT: "<<atoi(port_udp_.c_str())<<endl;
+	cout<<"UDP PORT: "<<atoi(port_.c_str())<<endl;
 
-	return sd_udp_;
+	return sd_unicast_;
 }
 
 string UDPComm::getBrdIp() {
@@ -79,13 +79,20 @@ void UDPComm::brdcast(string Message) {
 		sendBuffer_[n_read-1] = '\0';
 	}
 	*/
-	if((n_send = sendto(sd_brdcast_, Message/*sendBuffer_*/, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
+	if((n_send = sendto(sd_brdcast_, Message.c_str(), Message.length(), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
 		cout<<"sendto() error"<<endl;
 		exit(-3);
 	}
+
+	/*
+	if((n_send = sendto(sd_brdcast_, sendBuffer_, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
+		cout<<"sendto() error"<<endl;
+		exit(-3);
+	}
+	*/
 }
 
-void UDPComm::unicast(string Message) {
+void UDPComm::unicast(sockaddr_in& c_addr, string Message) {
 	int n_send;
 
 	/* test용 (terminal)
@@ -93,14 +100,20 @@ void UDPComm::unicast(string Message) {
 		sendBuffer_[n_read-1] = '\0';
 	}
 	*/
-	if((n_send = sendto(sd_unicast_, Message/*sendBuffer_*/, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
+	if((n_send = sendto(sd_unicast_, Message.c_str(), Message.length(), 0, (struct sockaddr *)&c_addr_, sizeof(s_addr_))) < 0) {
 		cout<<"sendto() error"<<endl;
 		exit(-3);
 	}
+	/*	
+	if((n_send = sendto(sd_unicast_, sendBuffer_, strlen(sendBuffer_), 0, (struct sockaddr *)&c_addr_, sizeof(s_addr_))) < 0) {
+		cout<<"sendto() error"<<endl;
+		exit(-3);
+	}
+	*/
 }
 
 int UDPComm::checkUserID(string ID) {
-	
+	return 0;
 }
 
 int UDPComm::checkDeviceInfo(sockaddr_in checkaddr_in) {

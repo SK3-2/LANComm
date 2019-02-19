@@ -44,7 +44,7 @@ class UDPComm{
 		int createUniSocket();
 		string getBrdIp();
 		void brdcast(string);
-		void unicast(string);
+		void unicast(sockaddr_in&, string);
 		void recvMultipleResponse(int);
 		int checkDeviceInfo(sockaddr_in);
 		int checkUserID(string);

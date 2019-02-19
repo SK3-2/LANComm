@@ -151,23 +151,16 @@ void ReplyComm::recvMultipleResponse(int sd) {
 			//auto jsonData = xx
 			//jsonData.deserializer();
 			if(jsonData.getClassName().compare("UserIDJson") == 0) {
-
+				//check user id & unicast
 			}
-			if(jsonData.getClassName().compare("UserActivityJson") == 0) {
-
-			}
-
+			if(jsonData.getClassName().compare("DeviceIDJson") == 0) {
+				//device id 저장
 			}
 			if(jsonData.getClassName().compare("PubKeyJson") == 0) {
-
+				//pubkey 저장
 			}
-
-			if() {
-
-			}
-
-			if() {
-
+			if(jsonData.getClassName().compare("UserActivityJson") == 0) {
+				//UserActivity 저장
 			}
 
 			if((ret = checkDeviceInfo(c_addr_))==0) {
@@ -182,7 +175,6 @@ void ReplyComm::recvMultipleResponse(int sd) {
 			}
 		}
 	}
-}
 
 // Get Empty pollfd index
 int ReplyComm::getEmptyPfdIndex(void){
