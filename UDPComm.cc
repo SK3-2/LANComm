@@ -14,8 +14,8 @@ void UDPComm::setAlarmInfo() {
 }
 
 void UDPComm::run() {
-	createBrdSocket();
-	setLocalDeviceInfo();
+	sd_brdcast_ = createBrdSocket();
+	sd_unicast_ = createUniSocket();
 }
 
 int UDPComm::createBrdSocket() {
@@ -36,6 +36,15 @@ int UDPComm::createBrdSocket() {
 	}
 
 	return sd;
+}
+
+int UDPComm::createUniSocket() {
+	//UDP comm setting
+	sd_unicast = socket(AF_INET, SOCK_DGRAM, 0);
+
+	cout<<"UDP PORT: "<<atoi(port_udp_.c_str())<<endl;
+
+	return sd_udp_;
 }
 
 string UDPComm::getBrdIp() {
@@ -63,57 +72,30 @@ string UDPComm::getBrdIp() {
 	return string(buff);
 }
 
-void UDPComm::setLocalDeviceInfo() {
-	int n_read, n_send;
-	int sd = createBrdSocket();
-
+void UDPComm::brdcast(string Message) {
+	int n_send;
+	/* test용 (terminal)
 	if((n_read = read(0, sendBuffer_, BUFSIZ)) > 0) {
 		sendBuffer_[n_read-1] = '\0';
 	}
-
-	if((n_send = sendto(sd, sendBuffer_, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
+	*/
+	if((n_send = sendto(sd_brdcast_, Message/*sendBuffer_*/, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
 		cout<<"sendto() error"<<endl;
 		exit(-3);
 	}
-
-	recvMultipleResponse(sd);
-	close(sd);
 }
 
-void UDPComm::recvMultipleResponse(int sd) {
-	int addr_len = sizeof(c_addr_);
-	int n_recv, ret;
-	//set Alarm Signal Info
-	setAlarmInfo();
+void UDPComm::unicast(string Message) {
+	int n_send;
 
-	while(1) {
-		AlarmTimer(2);
-		if((n_recv = recvfrom(sd, recvBuffer_, sizeof(recvBuffer_), 0, (struct sockaddr *)&c_addr_, (socklen_t *)&addr_len))<0) {
-			if(errno == EINTR) {
-				cout<<"socket timeout"<<endl;
-				cout<<"success"<<endl;
-				break;
-			}
-			else {
-				cout<<"recvfrom error"<<endl;
-			}
-		} 
-		else {
-			
-			AlarmTimer(0);
-			recvBuffer_[n_recv]='\0';
-
-			if((ret = checkDeviceInfo(c_addr_))==0) {
-				continue;
-			}
-			else {
-				//ip 정보를 담아서 객체 생성 후 vector에 저장
-				//g_IPtoDeviceTable[]				
-				deviceInfo.push_back(c_addr_);
-				cout<<"echoed Data: "<<recvBuffer_<<" from "<<inet_ntoa(c_addr_.sin_addr)<<endl;
-				cout<<"save ip["<<inet_ntoa(c_addr_.sin_addr)<<"]"<<endl;
-			}
-		}
+	/* test용 (terminal)
+	if((n_read = read(0, sendBuffer_, BUFSIZ)) > 0) {
+		sendBuffer_[n_read-1] = '\0';
+	}
+	*/
+	if((n_send = sendto(sd_unicast_, Message/*sendBuffer_*/, strlen(sendBuffer_), 0, (struct sockaddr *)&s_addr_, sizeof(s_addr_))) < 0) {
+		cout<<"sendto() error"<<endl;
+		exit(-3);
 	}
 }
 

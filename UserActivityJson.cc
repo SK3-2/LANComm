@@ -14,6 +14,10 @@ void UserActivity::setDeviceType(string device_type) {
 void UserActivity::setDeviceName(string device_name) {
 	device_name_ = device_name;
 } 
+
+string UserActivity::getClassName() {
+	return class_name_;
+}
 string UserActivity::getUserID() {
 	return user_id_;
 } 
@@ -29,6 +33,7 @@ string UserActivity::getDeviceName() {
 
 void UserActivity::deserializer(const char* JsonData) {
 	JsonParser jsonparser(JsonData);
+	setClassName(jsonparser.getString("ClassName"));
 	setUserID(jsonparser.getString("UserID"));
 	setActivityType(jsonparser.getString("ActivityType"));
 	setDeviceType(jsonparser.getString("DeviceType"));
@@ -38,7 +43,7 @@ void UserActivity::deserializer(const char* JsonData) {
 template <typename Writer>
 void UserActivity::serializer(Writer& writer) const {
 	writer.String("ClassName");
-	writer.String(typeid(this).name());
+	writer.String(class_name_);
 	writer.String("UserID");
 	writer.String(user_id_);
 	writer.String("ActivityType");

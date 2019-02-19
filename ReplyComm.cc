@@ -123,6 +123,67 @@ void ReplyComm::replyDeviceInfo() {
 	}
 }
 
+void ReplyComm::recvMultipleResponse(int sd) {
+	int addr_len = sizeof(c_addr_);
+	int n_recv, ret;
+	//set Alarm Signal Info
+	setAlarmInfo();
+
+	while(1) {
+		AlarmTimer(2);
+		if((n_recv = recvfrom(sd, recvBuffer_, sizeof(recvBuffer_), 0, (struct sockaddr *)&c_addr_, (socklen_t *)&addr_len))<0) {
+			if(errno == EINTR) {
+				cout<<"socket timeout"<<endl;
+				cout<<"success"<<endl;
+				break;
+			}
+			else {
+				cout<<"recvfrom error"<<endl;
+			}
+		} 
+		else {
+			
+			AlarmTimer(0);
+			recvBuffer_[n_recv]='\0';
+
+			//aes 복호화
+			//json deserialize
+			//auto jsonData = xx
+			//jsonData.deserializer();
+			if(jsonData.getClassName().compare("UserIDJson") == 0) {
+
+			}
+			if(jsonData.getClassName().compare("UserActivityJson") == 0) {
+
+			}
+
+			}
+			if(jsonData.getClassName().compare("PubKeyJson") == 0) {
+
+			}
+
+			if() {
+
+			}
+
+			if() {
+
+			}
+
+			if((ret = checkDeviceInfo(c_addr_))==0) {
+				continue;
+			}
+			else {
+				//ip 정보를 담아서 객체 생성 후 vector에 저장
+				//g_IPtoDeviceTable[]				
+				deviceInfo.push_back(c_addr_);
+				cout<<"echoed Data: "<<recvBuffer_<<" from "<<inet_ntoa(c_addr_.sin_addr)<<endl;
+				cout<<"save ip["<<inet_ntoa(c_addr_.sin_addr)<<"]"<<endl;
+			}
+		}
+	}
+}
+
 // Get Empty pollfd index
 int ReplyComm::getEmptyPfdIndex(void){
 	for (struct pollfd* pfd = &sock_pollfd_[0]; pfd < pollfd_end_; pfd++){

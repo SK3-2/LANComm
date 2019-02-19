@@ -41,21 +41,25 @@ class UDPComm{
 		~UDPComm() = default;
 		void run();
 		int createBrdSocket();
+		int createUniSocket();
 		string getBrdIp();
-		void setLocalDeviceInfo();
+		void brdcast(string);
+		void unicast(string);
 		void recvMultipleResponse(int);
 		int checkDeviceInfo(sockaddr_in);
 		int checkUserID(string);
 		void AlarmTimer(int);
 		void setAlarmInfo();
 	private:
+		int sd_brdcast_;
+		int sd_unicast_;
 		int status_;
 		string brdIp_;
 		string port_;
 		struct sigaction act_;
 		struct sockaddr_in s_addr_;
 		struct sockaddr_in c_addr_;
-		char sendBuffer_[BUFMAX];
+		//char sendBuffer_[BUFMAX];
 		char recvBuffer_[BUFMAX];
 		//AES aes; // aes 객체 추가해야함
 };
@@ -104,13 +108,14 @@ class ReplyComm{
 };
 
 
-class UserActivity{
+class UserActivityJson{
 	public:
-		UserActivity(string, string, string, string);
+		UserActivityJson(string, string, string, string);
 		void setUserID(string);
 		void setActivityType(string);
 		void setDeviceType(string);
 		void setDeviceName(string);
+		string getClassName();
 		string getUserID();
 		string getActivityType();
 		string getDeviceType();
@@ -118,6 +123,7 @@ class UserActivity{
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
+		string class_name_="UserActivityJson";
 		string user_id_;
 		string activity_type_;
 		string device_type_;
@@ -126,23 +132,40 @@ class UserActivity{
 
 class UserIDJson{
 	public:
+		string getClassName();
 		UserIDJson(string);
 		string getUserID();
 		void setUserID(string);
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
+		string class_name_="UserIDJson";
 		string user_id_;
+};
+
+class DeviceIDJson{
+	public:
+		DeviceIDJson(string);
+		string getClassName();
+		string getDeviceID();
+		void setDeviceID(string);
+		template <typename Writer> void serializer(Writer&) const;
+		void deserializer(const char*);
+	private:
+		string class_name_="DeviceIDJson";
+		string device_id_;
 };
 
 class PubKeyJson{
 	public:
 		PubKeyJson(string);
+		string getClassName();
 		string getPubKey();
 		void setPubKey(string);
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
+		string class_name_="PubKeyJson";
 		string public_key_;
 };
 
