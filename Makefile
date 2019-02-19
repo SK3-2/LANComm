@@ -1,5 +1,5 @@
 LANComm: 
-	g++ -std=c++11 -o LANComm main.cpp UDPComm.cpp TCPComm.cpp ReplyComm.cpp LANComm.h -lpthread
+	g++ -o LANComm main.cc UDPComm.cc TCPComm.cc ReplyComm.cc UserActivity.cc JsonParser.cc LANComm.h -lpthread
 all: LANComm
 
 clean:

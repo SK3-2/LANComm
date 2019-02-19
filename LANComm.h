@@ -17,9 +17,12 @@
 #include <signal.h>
 #include <errno.h>
 #include <vector>
+#include <unordered_map>
 #include <sys/poll.h>
 #include <algorithm>
 #include <thread>
+#include "rapidjson/rapidjson.h"
+#include "rapidjson/document.h"
 
 #define BUFMAX 1024
 #define DEVICEMAX 100
@@ -28,19 +31,10 @@
 using namespace std;
 
 extern vector<sockaddr_in> deviceInfo;
-extern string UserID;
+extern unordered_map<string, sockaddr_in> g_IPtoDeviceTable;
+extern string g_userID;
 
 class UDPComm{
-	private:
-		int sd;
-		int status;
-		string brdIp;
-		string port;
-		struct sigaction act;
-		struct sockaddr_in s_addr;
-		struct sockaddr_in c_addr;
-		char sendBuffer[BUFMAX];
-		char recvBuffer[BUFMAX];
 	public:
 		UDPComm() = delete;
 		UDPComm(string);
@@ -54,15 +48,19 @@ class UDPComm{
 		int checkUserID(string);
 		void AlarmTimer(int);
 		void setAlarmInfo();
+	private:
+		int status_;
+		string brdIp_;
+		string port_;
+		struct sigaction act_;
+		struct sockaddr_in s_addr_;
+		struct sockaddr_in c_addr_;
+		char sendBuffer_[BUFMAX];
+		char recvBuffer_[BUFMAX];
+		//AES aes; // aes 객체 추가해야함
 };
 
 class TCPComm{
-	private:
-		int sd;
-		int select_num;
-		string port;
-		struct sockaddr_in connect_addr;
-		char sendBuffer[BUFMAX];
 	public:
 		TCPComm() = delete;
 		TCPComm(string);
@@ -71,18 +69,15 @@ class TCPComm{
 		void connectSocket();
 		void setDeviceIndex();
 		void sendDataObject();
+	private:
+		int sd_;
+		int select_num_;
+		string port_;
+		struct sockaddr_in connect_addr_;
+		char sendBuffer_[BUFMAX];
 };
 
 class ReplyComm{
-	private:
-		int sd_udp;
-		int sd_tcp;
-		string port_udp;
-		string port_tcp;
-		struct sockaddr_in s_addr_udp, s_addr_tcp, c_addr;
-		struct pollfd sock_pollfd[SOCKETMAX];
-		const struct pollfd* pollfd_end = &sock_pollfd[SOCKETMAX-1];
-		char recvBuffer[BUFMAX], sendBuffer[BUFMAX];
 	public:
 		ReplyComm() = delete;
 		ReplyComm(string,string);
@@ -97,6 +92,69 @@ class ReplyComm{
 		struct pollfd* getNextReventPoll(struct pollfd*);
 		int acceptPollfd(int);
 		void register_Pollfd(int);
+	private:
+		int sd_udp_;
+		int sd_tcp_;
+		string port_udp_;
+		string port_tcp_;
+		struct sockaddr_in s_addr_udp_, s_addr_tcp_, c_addr_;
+		struct pollfd sock_pollfd_[SOCKETMAX];
+		const struct pollfd* pollfd_end_ = &sock_pollfd_[SOCKETMAX-1];
+		char recvBuffer_[BUFMAX], sendBuffer_[BUFMAX];
+};
+
+
+class UserActivity{
+	public:
+		UserActivity(string, string, string, string);
+		void setUserID(string);
+		void setActivityType(string);
+		void setDeviceType(string);
+		void setDeviceName(string);
+		string getUserID();
+		string getActivityType();
+		string getDeviceType();
+		string getDeviceName();
+		template <typename Writer> void serializer(Writer&) const;
+		void deserializer(const char*);
+	private:
+		string user_id_;
+		string activity_type_;
+		string device_type_;
+		string device_name_;
+};
+
+class UserIDJson{
+	public:
+		UserIDJson(string);
+		string getUserID();
+		void setUserID(string);
+		template <typename Writer> void serializer(Writer&) const;
+		void deserializer(const char*);
+	private:
+		string user_id_;
+};
+
+class PubKeyJson{
+	public:
+		PubKeyJson(string);
+		string getPubKey();
+		void setPubKey(string);
+		template <typename Writer> void serializer(Writer&) const;
+		void deserializer(const char*);
+	private:
+		string public_key_;
+};
+
+class JsonParser {
+	public:
+		JsonParser();
+		JsonParser(const char*); 
+		void setMessage(const char*);
+		bool hasMember(const char*);
+		string getString(const char*);    
+	private:
+		rapidjson::Document doc_;
 };
 
 void sigAlarm(int);
