@@ -8,7 +8,8 @@ int main(int argc, char *argv[]) {
 	
 	ReplyComm r1(argv[1],argv[2]);
 	thread receiver([&](){r1.run();});
-
+	
+	/*
 	UDPComm cm1(argv[1]);
 	cm1.run();
 	
@@ -22,7 +23,7 @@ int main(int argc, char *argv[]) {
 	int select_num;
 	cin >> select_num;
 	cm2.run(select_num);
-
+	*/
 }
 
 

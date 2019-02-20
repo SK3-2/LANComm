@@ -48,15 +48,11 @@ class UDPComm{
 		void recvMultipleResponse(int);
 		int checkDeviceInfo(sockaddr_in);
 		int checkUserID(string);
-		void AlarmTimer(int);
-		void setAlarmInfo();
 	private:
 		int sd_brdcast_;
 		int sd_unicast_;
-		int status_;
 		string brdIp_;
 		string port_;
-		struct sigaction act_;
 		struct sockaddr_in s_addr_;
 		struct sockaddr_in c_addr_;
 		//char sendBuffer_[BUFMAX];
@@ -77,6 +73,8 @@ class TCPComm{
 		int sd_;
 		int select_num_;
 		string port_;
+		UDPComm* UDPComm_;
+		TCPComm* TCPComm_;
 		struct sockaddr_in connect_addr_;
 		char sendBuffer_[BUFMAX];
 };
@@ -89,22 +87,31 @@ class ReplyComm{
 		void run();
 		int createUDPSocket();
 		int createTCPSocket();
+		void setUDPComm(UDPComm*);
+		void setTCPComm(TCPComm*);
 		string recvMsg(int);
 		void replyDeviceInfo();
+		void recvMultipleResponse();
 		int getEmptyPfdIndex();
 		struct pollfd* getNextPollfd(struct pollfd*);
 		struct pollfd* getNextReventPoll(struct pollfd*);
 		int acceptPollfd(int);
 		void register_Pollfd(int);
+		void AlarmTimer(int);
+		void setAlarmInfo();
 	private:
 		int sd_udp_;
 		int sd_tcp_;
 		string port_udp_;
 		string port_tcp_;
+		UDPComm UDPComm_;
+		TCPComm TCPComm_;
 		struct sockaddr_in s_addr_udp_, s_addr_tcp_, c_addr_;
 		struct pollfd sock_pollfd_[SOCKETMAX];
 		const struct pollfd* pollfd_end_ = &sock_pollfd_[SOCKETMAX-1];
 		char recvBuffer_[BUFMAX], sendBuffer_[BUFMAX];
+		int status_;
+		struct sigaction act_;
 };
 
 
@@ -130,43 +137,33 @@ class UserActivityJson{
 		string device_name_;
 };
 
-class UserIDJson{
+class Request{
 	public:
 		string getClassName();
-		UserIDJson(string);
+		Request(string);
 		string getUserID();
 		void setUserID(string);
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
-		string class_name_="UserIDJson";
+		string class_name_="Request";
 		string user_id_;
 };
 
-class DeviceIDJson{
+class Response{
 	public:
-		DeviceIDJson(string);
+		Response(string, string);
 		string getClassName();
 		string getDeviceID();
-		void setDeviceID(string);
-		template <typename Writer> void serializer(Writer&) const;
-		void deserializer(const char*);
-	private:
-		string class_name_="DeviceIDJson";
-		string device_id_;
-};
-
-class PubKeyJson{
-	public:
-		PubKeyJson(string);
-		string getClassName();
 		string getPubKey();
+		void setDeviceID(string);
 		void setPubKey(string);
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
-		string class_name_="PubKeyJson";
+		string class_name_="Response";
 		string public_key_;
+		string device_id_;
 };
 
 class JsonParser {

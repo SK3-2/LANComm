@@ -1,6 +1,6 @@
 #include "LANComm.h"
 
-ReplyComm::ReplyComm(string port_udp, string port_tcp): port_udp_(port_udp), port_tcp_(port_tcp){
+ReplyComm::ReplyComm(string port_udp, string port_tcp): port_udp_(port_udp), port_tcp_(port_tcp), UDPComm_(port_udp), TCPComm_(port_tcp) {
 	for(int i=0; i<SOCKETMAX; i++){
 		sock_pollfd_[i] = {-1,POLLIN, 0};
 	}
@@ -8,7 +8,6 @@ ReplyComm::ReplyComm(string port_udp, string port_tcp): port_udp_(port_udp), por
 	sock_pollfd_[0].fd = createTCPSocket();
 	sock_pollfd_[1].fd = createUDPSocket();
 }
-
 
 int ReplyComm::createUDPSocket() {
 	//UDP comm setting
@@ -51,6 +50,16 @@ int ReplyComm::createTCPSocket() {
 
 	return sd_tcp_;
 }
+
+/*
+void ReplyComm::setUDPComm(UDPComm* UDPComm) {
+	UDPComm_ = UDPComm;
+}
+
+void ReplyComm::setTCPComm(TCPComm* TCPComm) {
+	TCPComm_ = TCPComm;
+}
+*/
 // poll udp & tcp socket
 void ReplyComm::run() {
 	cout<<"ReplyComm run!"<<endl;
@@ -123,7 +132,7 @@ void ReplyComm::replyDeviceInfo() {
 	}
 }
 
-void ReplyComm::recvMultipleResponse(int sd) {
+void ReplyComm::recvMultipleResponse() {
 	int addr_len = sizeof(c_addr_);
 	int n_recv, ret;
 	//set Alarm Signal Info
@@ -131,7 +140,7 @@ void ReplyComm::recvMultipleResponse(int sd) {
 
 	while(1) {
 		AlarmTimer(2);
-		if((n_recv = recvfrom(sd, recvBuffer_, sizeof(recvBuffer_), 0, (struct sockaddr *)&c_addr_, (socklen_t *)&addr_len))<0) {
+		if((n_recv = recvfrom(sd_udp_, recvBuffer_, sizeof(recvBuffer_), 0, (struct sockaddr *)&c_addr_, (socklen_t *)&addr_len))<0) {
 			if(errno == EINTR) {
 				cout<<"socket timeout"<<endl;
 				cout<<"success"<<endl;
@@ -147,7 +156,6 @@ void ReplyComm::recvMultipleResponse(int sd) {
 			recvBuffer_[n_recv]='\0';
 
 			//aes 복호화
-			//json deserialize
 			//auto jsonData = xx
 			//jsonData.deserializer();
 			if(jsonData.getClassName().compare("UserIDJson") == 0) {
@@ -175,6 +183,7 @@ void ReplyComm::recvMultipleResponse(int sd) {
 			}
 		}
 	}
+}
 
 // Get Empty pollfd index
 int ReplyComm::getEmptyPfdIndex(void){
@@ -226,3 +235,19 @@ void ReplyComm::register_Pollfd(int nfd) {
 	sock_pollfd_[EmptyPfdIndex].fd = nfd;
 }
 
+void ReplyComm::setAlarmInfo() {
+	act_.sa_handler = sigAlarm;
+	sigemptyset(&act_.sa_mask);
+	act_.sa_flags = 0;
+	status_ = sigaction(SIGALRM, &act_, 0);
+}
+
+void ReplyComm::AlarmTimer(int time) {
+	alarm(time);
+	return;
+}
+
+void sigAlarm(int signo) {
+	cout<<"alarm"<<endl;
+	return;
+}

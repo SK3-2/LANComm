@@ -6,13 +6,6 @@ UDPComm::UDPComm(string port): port_(port) {
 	cout<<"my brdIP: "<<brdIp_<<endl;
 }
 
-void UDPComm::setAlarmInfo() {
-	act_.sa_handler = sigAlarm;
-	sigemptyset(&act_.sa_mask);
-	act_.sa_flags = 0;
-	status_ = sigaction(SIGALRM, &act_, 0);
-}
-
 void UDPComm::run() {
 	sd_brdcast_ = createBrdSocket();
 	sd_unicast_ = createUniSocket();
@@ -123,15 +116,5 @@ int UDPComm::checkDeviceInfo(sockaddr_in checkaddr_in) {
 		}
 	}
 	return 1;
-}
-
-void UDPComm::AlarmTimer(int time) {
-	alarm(time);
-	return;
-}
-
-void sigAlarm(int signo) {
-	cout<<"alarm"<<endl;
-	return;
 }
 
