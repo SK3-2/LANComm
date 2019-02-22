@@ -6,7 +6,7 @@ UDPComm::UDPComm(string port): port_(port) {
 	cout<<"my brdIP: "<<brdIp_<<endl;
 }
 
-void UDPComm::run() {
+void UDPComm::createUDPSocket() {
 	sd_brdcast_ = createBrdSocket();
 	sd_unicast_ = createUniSocket();
 }
@@ -39,6 +39,10 @@ int UDPComm::createUniSocket() {
 
 	return sd_unicast_;
 }
+
+void UDPComm::setRSAEncryptor(const RSA_Encryptor& RSA_Encryptor) {
+	rsaEn_ = &RSA_Encryptor;
+} 
 
 string UDPComm::getBrdIp() {
 	char  buff[BUFMAX];

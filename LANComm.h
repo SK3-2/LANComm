@@ -23,6 +23,8 @@
 #include <thread>
 #include "rapidjson/rapidjson.h"
 #include "rapidjson/document.h"
+#include "Encryptor/RSA_Crypto.h"
+#include "Encryptor/AES_Crypto.h"
 
 #define BUFMAX 1024
 #define DEVICEMAX 100
@@ -40,6 +42,7 @@ class UDPComm{
 		UDPComm(string);
 		~UDPComm() = default;
 		void run();
+		void createUDPSocket();
 		int createBrdSocket();
 		int createUniSocket();
 		string getBrdIp();
@@ -48,6 +51,7 @@ class UDPComm{
 		void recvMultipleResponse(int);
 		int checkDeviceInfo(sockaddr_in);
 		int checkUserID(string);
+		void setRSAEncryptor(const RSA_Encryptor&);
 	private:
 		int sd_brdcast_;
 		int sd_unicast_;
@@ -57,7 +61,7 @@ class UDPComm{
 		struct sockaddr_in c_addr_;
 		//char sendBuffer_[BUFMAX];
 		char recvBuffer_[BUFMAX];
-		//AES aes; // aes 객체 추가해야함
+		const RSA_Encryptor* rsaEn_;
 };
 
 class TCPComm{
@@ -114,7 +118,6 @@ class ReplyComm{
 		struct sigaction act_;
 };
 
-
 class UserActivityJson{
 	public:
 		UserActivityJson(string, string, string, string);
@@ -130,7 +133,7 @@ class UserActivityJson{
 		template <typename Writer> void serializer(Writer&) const;
 		void deserializer(const char*);
 	private:
-		string class_name_="UserActivityJson";
+		string class_name_="UserActivity";
 		string user_id_;
 		string activity_type_;
 		string device_type_;
