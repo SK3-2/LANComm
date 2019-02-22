@@ -1,7 +1,8 @@
 #include "LANComm.h"
 
 vector<sockaddr_in> deviceInfo={};
-unordered_map<string, sockaddr_in> g_IPtoDeviceTable; string UserID = "taehyun";
+unordered_map<string, sockaddr_in> g_IPtoDeviceTable;
+string UserID = "taehyun";
 
 TCPComm::TCPComm(string port): port_(port) {
 	memset((char *)&connect_addr_,'\0',sizeof(connect_addr_));
