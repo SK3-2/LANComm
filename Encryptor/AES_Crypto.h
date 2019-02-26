@@ -19,26 +19,30 @@ using std::exit;
 #include "cryptopp/ccm.h"
 using namespace CryptoPP;
 
-class AES_Encryptor
+class AES_Module
 {
 private:
   CBC_Mode<AES>::Encryption encryptEngine;
   CBC_Mode<AES>::Decryption decryptEngine;
   AutoSeededRandomPool prng;
-  CryptoPP::byte* _key;
+  //CryptoPP::byte* _key;
   size_t _size;
   CryptoPP::byte _iv[AES::BLOCKSIZE];
-  void SetKey();  
+  void SetEngineWithKey(string _key);  
 
 public: 
-  AES_Encryptor(string AESKeyfile); 
+  AES_Module(string AESKeyfile);   
+  string LoadKey(string);
+  
   // Generate new iv and return
   string getNewIV();
   void setIV(byte* iv);
+  
   // encrypt string
-  string encrypt(string plain);
+  void encrypt(string& plain,string& cipher);
+  
   // decrypt string
-  string decrypt(string cipher);
+  bool decrypt(string& cipher,string& recovered);
 };
 
 #endif

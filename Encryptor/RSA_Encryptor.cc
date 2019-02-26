@@ -1,22 +1,21 @@
 #include "RSA_Crypto.h"
 
-
-RSA_Encryptor::RSA_Encryptor(PublicKeyStore* pks){
-  pkStore = pks; 
+RSA_Encryptor::RSA_Encryptor(){    
+    pdm = PairedDeviceManager::getInstance();
 }
 
-string RSA_Encryptor::encrypt(string deviceID, string plain) {   
-  publicKey.Load(StringSource(pkStore->getPubKey(deviceID),true).Ref());
-  encryptEngine = new RSAES_OAEP_SHA_Encryptor(publicKey);
-  string cipher;
+bool RSA_Encryptor::encrypt(string deviceID, string& plain, string& cipher) {   
+  publicKey.Load(StringSource(pdm->getPublicKey(deviceID),true).Ref());
+  encryptEngine = new RSAES_OAEP_SHA_Encryptor(publicKey);  
   try { 
     StringSource(plain, true, new PK_EncryptorFilter( rng, *encryptEngine,
 	  new StringSink( cipher ) ) );
+    return true;
   } catch( CryptoPP::Exception& e )  {
     cerr << "Caught Exception during RSA Encryption... "<<endl;
     cerr << e.what() <<endl;
-  }
-  return cipher;
+    return false;
+  }  
 }
 
 RSA_Encryptor::~RSA_Encryptor(){
